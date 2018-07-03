@@ -2,19 +2,18 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
-public class Document implements IFileTree {
-    private File root;
+public class Document extends AbstractFileData {
     private byte[] data;
 
     // constructor
-    Document(String rootPathName) throws IOException {
-        this(new File(rootPathName));
+    Document(String partialPathName, String rootPathName) throws IOException {
+        this(partialPathName, new File(rootPathName));
     }
 
     // constructor
-    Document(File root) throws IOException {
-        this.root = root;
-        this.data = Files.readAllBytes(this.root.toPath());
+    Document(String partialPathName, File root) throws IOException{
+        super(partialPathName, root);
+        this.data = Files.readAllBytes(root.toPath());
     }
 
     @Override
@@ -22,7 +21,7 @@ public class Document implements IFileTree {
         File destFile = new File(destination);
 
         if (destFile.isDirectory()) {
-            Files.write(new File(destination + "/" + this.root.getName()).toPath(), this.data);
+            Files.write(new File(destination + "/" + this.getPartialPathName()).toPath(), this.data);
         } else {
             throw new IllegalArgumentException("Cannot place document into non-directory.");
         }

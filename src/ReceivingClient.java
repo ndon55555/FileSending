@@ -7,13 +7,26 @@ public class ReceivingClient {
         final int PORT = 10001;
         final String HOSTNAME = "donraspberrypi.ddns.net";
 
-        try (Socket server = new Socket(HOSTNAME, PORT)) {
+        try (Socket server = new Socket(HOSTNAME, PORT);
+             ObjectInputStream fromServer = new ObjectInputStream(server.getInputStream())) {
+
             System.out.println("Connected to server.");
-            new PrintWriter(server.getOutputStream(), true).println("Pictures");
+            new PrintWriter(server.getOutputStream(), true).println("Pictures/Huh");
             System.out.println("Sent desired pathname.");
-            IFileTree copiedFiles = (Directory) new ObjectInputStream(server.getInputStream()).readObject();
+
+            boolean isReading = true;
+
+            while (isReading) {
+                try {
+                    IFileData fileData = (IFileData) fromServer.readObject();
+                    fileData.copyTo("C:/Users/Don/Desktop");
+                    System.out.println("File received.");
+                } catch (Exception e) {
+                    isReading = false;
+                }
+            }
+
             System.out.println("Received copies of files.");
-            copiedFiles.copyTo("C:/Users/Don/Desktop");
         } catch (Exception e) {
             e.printStackTrace();
         }
