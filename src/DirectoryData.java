@@ -2,17 +2,13 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
-public class Directory extends AbstractFileData {
+public class DirectoryData extends AbstractFileData {
     // constructor
-    Directory(String partialPathName, String rootPathName) {
-        this(partialPathName, new File(rootPathName));
-    }
-
-    // constructor
-    Directory(String partialPathName, File root) {
+    DirectoryData(String partialPathName, File root) {
         super(partialPathName, root);
     }
 
+    // Creates a copy of this directory at the given path string.
     @Override
     public void copyTo(String destination) throws IOException {
         File destFile = new File(destination);

@@ -2,20 +2,16 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
-public class Document extends AbstractFileData {
+public class DocumentData extends AbstractFileData {
     private byte[] data;
 
     // constructor
-    Document(String partialPathName, String rootPathName) throws IOException {
-        this(partialPathName, new File(rootPathName));
-    }
-
-    // constructor
-    Document(String partialPathName, File root) throws IOException{
+    DocumentData(String partialPathName, File root) throws IOException{
         super(partialPathName, root);
         this.data = Files.readAllBytes(root.toPath());
     }
 
+    // Copies this document and its contents to the given path string.
     @Override
     public void copyTo(String destination) throws IOException {
         File destFile = new File(destination);

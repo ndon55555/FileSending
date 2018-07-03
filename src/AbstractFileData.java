@@ -2,21 +2,23 @@ import java.io.File;
 
 public abstract class AbstractFileData implements IFileData {
     private String partialPathName;
-    private File root;
+    private File file;
 
     // constructor
-    AbstractFileData(String partialPathName, File root) {
+    AbstractFileData(String partialPathName, File file) {
         this.partialPathName = partialPathName;
-        this.root = root;
+        this.file = file;
     }
 
+    // Returns a pathname that may be anywhere from the absolute path name to simply the file name.
     @Override
     public String getPartialPathName() {
         return this.partialPathName;
     }
 
+    // Returns the File representation of this file data.
     @Override
     public File getFile() {
-        return this.root;
+        return this.file;
     }
 }
