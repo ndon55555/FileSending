@@ -14,24 +14,23 @@ public class FileSendingServer {
              Socket sendingClient = server.accept();
 
              ObjectOutputStream toReceiver = new ObjectOutputStream(receivingClient.getOutputStream());
-             ObjectInputStream fromSender = new ObjectInputStream(sendingClient.getInputStream())) {
+             ObjectInputStream fromSender = new ObjectInputStream(sendingClient.getInputStream());
+
+             Scanner receiverTarget = new Scanner(receivingClient.getInputStream());
+             PrintWriter targetToReceiver = new PrintWriter(sendingClient.getOutputStream(), true)) {
 
             System.out.println("Both clients connected.");
-            String targetUserPath = new Scanner(receivingClient.getInputStream()).nextLine();
-            new PrintWriter(sendingClient.getOutputStream(), true).println(targetUserPath);
+            String targetUserPath = receiverTarget.nextLine();
+            targetToReceiver.println(targetUserPath);
+            //receiverTarget.close();
+            //targetToReceiver.close();
 
-            boolean isReading = true;
-
-            while (isReading) {
-                try {
-                    toReceiver.writeObject(fromSender.readObject());
-                    System.out.println("Received a file and forwarded it.");
-                } catch (Exception e) {
-                    isReading = false;
-                }
+            while (true) {
+                toReceiver.writeObject(fromSender.readObject());
+                toReceiver.flush();
+                toReceiver.reset();
+                System.out.println(Runtime.getRuntime().freeMemory());
             }
-
-            System.out.println("Requested file(s) sent.");
         } catch (Exception e) {
             e.printStackTrace();
         }

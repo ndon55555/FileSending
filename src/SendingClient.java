@@ -36,6 +36,8 @@ public class SendingClient {
             while (!toSend.isEmpty()) {
                 IFileData f = toSend.pop();
                 toServer.writeObject(f);
+                toServer.flush();
+                toServer.reset();
                 File[] subFiles = f.getFile().listFiles();
 
                 if (subFiles != null) {
@@ -49,14 +51,19 @@ public class SendingClient {
     }
 
     // Determines if a given file should be added to the stack or immediately sent through the stream.
-    private static void handleFile(String pathName, File f, Stack<IFileData> toSend, ObjectOutputStream toServer) {
+    private static void handleFile(String pathName, File f, Stack<IFileData> toSend, ObjectOutputStream toServer) throws IOException {
         if (f.isDirectory()) {
             toSend.push(new DirectoryData(pathName, f));
         } else {
             try {
-                toServer.writeObject(new DocumentData(pathName, f));
-            } catch (IOException e) {
-                e.printStackTrace();
+                DocumentPieces dp = new DocumentPieces(f);
+
+                // sending the document in pieces if it is large
+                for (byte[] arr : dp.getPieces()) {
+                    toServer.writeObject(new DocumentData(pathName, f, arr));
+                    toServer.flush();
+                    toServer.reset();
+                }
             } catch (OutOfMemoryError ooe) {
                 System.err.println("Out of memory. Unable to process document: " + f.getName() + ".");
             }
