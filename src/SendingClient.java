@@ -30,11 +30,11 @@ public class SendingClient {
         File root = new File(absPath);
 
         if (Files.exists(root.toPath())) {
-            Stack<IFileData> toSend = new Stack<>();
+            Stack<DirectoryData> toSend = new Stack<>();
             handleFile(root.getName(), root, toSend, toServer);
 
             while (!toSend.isEmpty()) {
-                IFileData f = toSend.pop();
+                DirectoryData f = toSend.pop();
                 toServer.writeObject(f);
                 toServer.flush();
                 toServer.reset();
@@ -51,7 +51,7 @@ public class SendingClient {
     }
 
     // Determines if a given file should be added to the stack or immediately sent through the stream.
-    private static void handleFile(String pathName, File f, Stack<IFileData> toSend, ObjectOutputStream toServer) throws IOException {
+    private static void handleFile(String pathName, File f, Stack<DirectoryData> toSend, ObjectOutputStream toServer) throws IOException {
         if (f.isDirectory()) {
             toSend.push(new DirectoryData(pathName, f));
         } else {

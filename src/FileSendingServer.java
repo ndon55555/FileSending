@@ -22,8 +22,6 @@ public class FileSendingServer {
             System.out.println("Both clients connected.");
             String targetUserPath = receiverTarget.nextLine();
             targetToReceiver.println(targetUserPath);
-            //receiverTarget.close();
-            //targetToReceiver.close();
 
             while (true) {
                 toReceiver.writeObject(fromSender.readObject());

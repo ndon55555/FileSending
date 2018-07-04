@@ -1,5 +1,6 @@
 import java.io.File;
 
+// Represents a file's information, including the file itself.
 public abstract class AbstractFileData implements IFileData {
     private String partialPathName;
     private File file;
