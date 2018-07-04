@@ -1,3 +1,4 @@
+import java.io.EOFException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
@@ -29,6 +30,8 @@ public class FileSendingServer {
                 toReceiver.reset();
                 System.out.println(Runtime.getRuntime().freeMemory());
             }
+        } catch (EOFException eofe) {
+            System.out.println("One of the clients has disconnected.");
         } catch (Exception e) {
             e.printStackTrace();
         }

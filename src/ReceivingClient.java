@@ -1,3 +1,4 @@
+import java.io.EOFException;
 import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
@@ -12,14 +13,16 @@ public class ReceivingClient {
              ObjectInputStream fromServer = new ObjectInputStream(server.getInputStream())) {
 
             System.out.println("Connected to server.");
-            new PrintWriter(server.getOutputStream(), true).println("Downloads");
+            new PrintWriter(server.getOutputStream(), true).println("Pictures");
             System.out.println("Sent desired pathname.");
 
             while (true) {
                 IFileData fileData = (IFileData) fromServer.readObject();
                 fileData.writeTo(DOWNLOAD_PATH);
-                System.out.println("Received file: " + fileData.getName());
+                System.out.println("Received " + fileData.toString());
             }
+        } catch (EOFException eofe) {
+            System.out.println("Disconnected from server.");
         } catch (Exception e) {
             e.printStackTrace();
         }

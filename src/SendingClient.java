@@ -1,9 +1,10 @@
+import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.nio.file.Files;
-import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 import java.util.Stack;
 
@@ -20,6 +21,8 @@ public class SendingClient {
             System.out.println("Received desired path.");
             sendAllInPath(userPath, toServer);
             System.out.println("Sent copied file(s).");
+        } catch (EOFException eofe) {
+            System.out.println("Disconnected from server.");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -56,11 +59,11 @@ public class SendingClient {
         if (f.isDirectory()) {
             toSend.push(new DirectoryData(partialPathName, f.getCanonicalPath()));
         } else {
-            DocumentPieces dp = new DocumentPieces(f.getCanonicalPath());
+            DocumentData doc = new DocumentData(partialPathName, f.getCanonicalPath());
 
-            // sending the document in pieces if it is large
-            for (byte[] arr : dp.getPieces()) {
-                toServer.writeObject(new DocumentData(partialPathName, f.getCanonicalPath(), arr));
+            // sending the document in pieces
+            for (DocumentPiece piece : doc.getPieces()) {
+                toServer.writeObject(piece);
                 toServer.flush();
                 toServer.reset();
             }

@@ -19,4 +19,9 @@ class DirectoryData extends AbstractFileData {
     public boolean isDirectory() {
         return true;
     }
+
+    @Override
+    public String toString() {
+        return "directory " + this.getName();
+    }
 }

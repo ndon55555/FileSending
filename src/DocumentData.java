@@ -1,31 +1,38 @@
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 
-// Represents a contiguous subset of a file's bytes.
+// Represents an entire document (contains all disjoint subsets of its bytes).
 public class DocumentData extends AbstractFileData {
-    private static final Object LOCK = new Object();
-
-    private byte[] data;
+    private List<byte[]> pieces;
 
     // constructor
-    DocumentData(String partialPathName, String pathName, byte[] data) {
+    DocumentData(String partialPathName, String pathName) {
         super(partialPathName, pathName);
-        this.data = data;
+        this.pieces = Utilities.obtainBytes(new File(pathName));
     }
 
-    // Writes/appends this file's bytes to the given path.
-    @Override
-    public void writeTo(String destination) throws IOException {
-        FileOutputStream toDoc = new FileOutputStream(destination + "/" + this.getPartialPathName(), true);
+    // Returns a list of all DocumentPieces used to represent this document.
+    public List<DocumentPiece> getPieces() throws IOException {
+        List<DocumentPiece> result = new LinkedList<>();
 
-        synchronized (LOCK) {
-            toDoc.write(this.data);
+        for (byte[] arr : pieces) {
+            result.add(new DocumentPiece(this.getPartialPathName(), this.getCanonicalPath(), arr));
         }
+
+        return result;
     }
 
     @Override
     public boolean isDirectory() {
         return false;
+    }
+
+    @Override
+    public void writeTo(String destination) throws IOException {
+        for (DocumentPiece piece : this.getPieces()) {
+            piece.writeTo(destination);
+        }
     }
 }
