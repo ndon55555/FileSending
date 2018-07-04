@@ -12,13 +12,13 @@ public class ReceivingClient {
              ObjectInputStream fromServer = new ObjectInputStream(server.getInputStream())) {
 
             System.out.println("Connected to server.");
-            new PrintWriter(server.getOutputStream(), true).println("Pictures");
+            new PrintWriter(server.getOutputStream(), true).println("Downloads");
             System.out.println("Sent desired pathname.");
 
             while (true) {
                 IFileData fileData = (IFileData) fromServer.readObject();
                 fileData.writeTo(DOWNLOAD_PATH);
-                System.out.println("Received file: " + fileData.getFile().getName());
+                System.out.println("Received file: " + fileData.getName());
             }
         } catch (Exception e) {
             e.printStackTrace();

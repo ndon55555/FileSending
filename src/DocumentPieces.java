@@ -6,8 +6,8 @@ public class DocumentPieces {
     private List<byte[]> pieces;
 
     // constructor
-    DocumentPieces(File f) {
-        this.pieces = Utilities.obtainBytes(f);
+    DocumentPieces(String pathName) {
+        this.pieces = Utilities.obtainBytes(new File(pathName));
     }
 
     // Returns a list of all byte arrays needed to represent this document.

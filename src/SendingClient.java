@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.Scanner;
 import java.util.Stack;
 
@@ -38,12 +39,12 @@ public class SendingClient {
                 toServer.writeObject(f);
                 toServer.flush();
                 toServer.reset();
-                File[] subFiles = f.getFile().listFiles();
+                File[] subFiles = f.listFiles();
 
                 if (subFiles != null) {
                     for (File subFile : subFiles) {
-                        String pathName = f.getPartialPathName() + "/" + subFile.getName();
-                        handleFile(pathName, subFile, toSend, toServer);
+                        String partialPathName = f.getPartialPathName() + "/" + subFile.getName();
+                        handleFile(partialPathName, subFile, toSend, toServer);
                     }
                 }
             }
@@ -51,21 +52,17 @@ public class SendingClient {
     }
 
     // Determines if a given file should be added to the stack or immediately sent through the stream.
-    private static void handleFile(String pathName, File f, Stack<DirectoryData> toSend, ObjectOutputStream toServer) throws IOException {
+    private static void handleFile(String partialPathName, File f, Stack<DirectoryData> toSend, ObjectOutputStream toServer) throws IOException {
         if (f.isDirectory()) {
-            toSend.push(new DirectoryData(pathName, f));
+            toSend.push(new DirectoryData(partialPathName, f.getCanonicalPath()));
         } else {
-            try {
-                DocumentPieces dp = new DocumentPieces(f);
+            DocumentPieces dp = new DocumentPieces(f.getCanonicalPath());
 
-                // sending the document in pieces if it is large
-                for (byte[] arr : dp.getPieces()) {
-                    toServer.writeObject(new DocumentData(pathName, f, arr));
-                    toServer.flush();
-                    toServer.reset();
-                }
-            } catch (OutOfMemoryError ooe) {
-                System.err.println("Out of memory. Unable to process document: " + f.getName() + ".");
+            // sending the document in pieces if it is large
+            for (byte[] arr : dp.getPieces()) {
+                toServer.writeObject(new DocumentData(partialPathName, f.getCanonicalPath(), arr));
+                toServer.flush();
+                toServer.reset();
             }
         }
     }

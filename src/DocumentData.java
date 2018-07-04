@@ -9,8 +9,8 @@ public class DocumentData extends AbstractFileData {
     private byte[] data;
 
     // constructor
-    DocumentData(String partialPathName, File file, byte[] data) {
-        super(partialPathName, file);
+    DocumentData(String partialPathName, String pathName, byte[] data) {
+        super(partialPathName, pathName);
         this.data = data;
     }
 
@@ -22,5 +22,10 @@ public class DocumentData extends AbstractFileData {
         synchronized (LOCK) {
             toDoc.write(this.data);
         }
+    }
+
+    @Override
+    public boolean isDirectory() {
+        return false;
     }
 }
