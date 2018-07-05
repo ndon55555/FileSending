@@ -5,7 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class Utilities {
-    public static int ARRAY_SIZE_UPPER_LIMIT = 75000;
+    public static int ARRAY_SIZE_UPPER_LIMIT = 2000000;
 
     /*
     Returns a list of the byte arrays of the given file. The list has more than

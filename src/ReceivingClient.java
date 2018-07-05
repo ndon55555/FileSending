@@ -1,7 +1,8 @@
 import java.io.EOFException;
 import java.io.ObjectInputStream;
-import java.io.PrintWriter;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.Scanner;
 
 public class ReceivingClient {
     public static void main(String[] args) {
@@ -9,22 +10,35 @@ public class ReceivingClient {
         final String HOSTNAME = "donraspberrypi.ddns.net";
         final String DOWNLOAD_PATH = "C:/Users/Don/Desktop";
 
-        try (Socket server = new Socket(HOSTNAME, PORT);
-             ObjectInputStream fromServer = new ObjectInputStream(server.getInputStream())) {
+        boolean shouldContinue = true;
+        Scanner usrInput = new Scanner(System.in);
 
-            System.out.println("Connected to server.");
-            new PrintWriter(server.getOutputStream(), true).println("Pictures");
-            System.out.println("Sent desired pathname.");
+        while (shouldContinue) {
+            try (Socket server = new Socket(HOSTNAME, PORT);
+                 ObjectOutputStream toServer = new ObjectOutputStream(server.getOutputStream());
+                 ObjectInputStream fromServer = new ObjectInputStream(server.getInputStream())) {
 
-            while (true) {
-                IFileData fileData = (IFileData) fromServer.readObject();
-                fileData.writeTo(DOWNLOAD_PATH);
-                System.out.println("Received " + fileData.toString());
+                System.out.println("Connected to server.");
+                toServer.writeObject(ClientType.RECEIVER);
+                toServer.flush();
+                System.out.println("Sent client type to server.");
+                System.out.print("Enter user path for file extraction: ");
+                String targetPath = usrInput.nextLine();
+                toServer.writeUTF(targetPath);
+                toServer.flush();
+                System.out.println("Sent desired pathname: " + targetPath);
+
+                while (true) {
+                    IFileData fileData = (IFileData) fromServer.readObject();
+                    fileData.writeTo(DOWNLOAD_PATH);
+                    System.out.println("Received " + fileData.toString());
+                }
+            } catch (EOFException eofe) {
+                System.out.println("No more data from sending client.");
+            } catch (Exception e) {
+                e.printStackTrace();
+                shouldContinue = false;
             }
-        } catch (EOFException eofe) {
-            System.out.println("Disconnected from server.");
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 }

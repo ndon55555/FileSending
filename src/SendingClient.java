@@ -1,11 +1,9 @@
-import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.nio.file.Files;
-import java.util.List;
-import java.util.Scanner;
 import java.util.Stack;
 
 public class SendingClient {
@@ -13,18 +11,25 @@ public class SendingClient {
         final int PORT = 10001;
         final String HOSTNAME = "donraspberrypi.ddns.net";
 
-        try (Socket server = new Socket(HOSTNAME, PORT);
-             ObjectOutputStream toServer = new ObjectOutputStream(server.getOutputStream())) {
+        boolean shouldContinue = true;
 
-            System.out.println("Connected to server.");
-            String userPath = new Scanner(server.getInputStream()).nextLine();
-            System.out.println("Received desired path.");
-            sendAllInPath(userPath, toServer);
-            System.out.println("Sent copied file(s).");
-        } catch (EOFException eofe) {
-            System.out.println("Disconnected from server.");
-        } catch (Exception e) {
-            e.printStackTrace();
+        while (shouldContinue) {
+            try (Socket server = new Socket(HOSTNAME, PORT);
+                 ObjectOutputStream toServer = new ObjectOutputStream(server.getOutputStream());
+                 ObjectInputStream fromServer = new ObjectInputStream(server.getInputStream())) {
+
+                System.out.println("Connected to server.");
+                toServer.writeObject(ClientType.SENDER);
+                toServer.flush();
+                System.out.println("Sent client type to server.");
+                String userPath = fromServer.readUTF();
+                System.out.println("Received desired path: " + userPath);
+                sendAllInPath(userPath, toServer);
+                System.out.println("Sent copied file(s).");
+            } catch (Exception e) {
+                e.printStackTrace();
+                shouldContinue = false;
+            }
         }
     }
 
