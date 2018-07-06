@@ -14,14 +14,16 @@ public class ReceivingClient {
         Scanner usrInput = new Scanner(System.in);
 
         while (shouldContinue) {
+            System.out.println("Connecting to server...");
+
             try (Socket server = new Socket(HOSTNAME, PORT);
                  ObjectOutputStream toServer = new ObjectOutputStream(server.getOutputStream());
                  ObjectInputStream fromServer = new ObjectInputStream(server.getInputStream())) {
 
-                System.out.println("Connected to server.");
+                System.out.println("Server connected.");
                 toServer.writeObject(ClientType.RECEIVER);
                 toServer.flush();
-                System.out.println("Sent client type to server.");
+                System.out.println("Sent client type to server...");
                 System.out.print("Enter user path for file extraction: ");
                 String targetPath = usrInput.nextLine();
                 toServer.writeUTF(targetPath);
