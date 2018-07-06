@@ -3,21 +3,19 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
-// Represents an entire document (contains all disjoint subsets of its bytes).
+// Represents an entire document.
 public class DocumentData extends AbstractDocumentData {
-    private List<byte[]> pieces;
-
     // constructor
     DocumentData(String partialPathName, String pathName) {
         super(partialPathName, pathName);
-        this.pieces = Utilities.obtainBytes(new File(pathName));
     }
 
     // Returns a list of all DocumentPieces used to represent this document.
     public List<DocumentDataPiece> getPieces() throws IOException {
+        List<byte[]> bytes = Utilities.obtainBytes(new File(this.getCanonicalPath()));
         List<DocumentDataPiece> result = new LinkedList<>();
 
-        for (byte[] arr : pieces) {
+        for (byte[] arr : bytes) {
             result.add(new DocumentDataPiece(this.getPartialPathName(), this.getCanonicalPath(), arr));
         }
 
