@@ -10,37 +10,32 @@ public class ReceivingClient {
         final String HOSTNAME = "donraspberrypi.ddns.net";
         final String DOWNLOAD_PATH = "C:/Users/Don/Desktop";
 
-        boolean shouldContinue = true;
         Scanner usrInput = new Scanner(System.in);
+        System.out.println("Connecting to server...");
 
-        while (shouldContinue) {
-            System.out.println("Connecting to server...");
+        try (Socket server = new Socket(HOSTNAME, PORT);
+             ObjectOutputStream toServer = new ObjectOutputStream(server.getOutputStream());
+             ObjectInputStream fromServer = new ObjectInputStream(server.getInputStream())) {
 
-            try (Socket server = new Socket(HOSTNAME, PORT);
-                 ObjectOutputStream toServer = new ObjectOutputStream(server.getOutputStream());
-                 ObjectInputStream fromServer = new ObjectInputStream(server.getInputStream())) {
+            System.out.println("Server connected.");
+            toServer.writeObject(ClientType.RECEIVER);
+            toServer.flush();
+            System.out.println("Sent client type to server...");
+            System.out.print("Enter user path for file extraction: ");
+            String targetPath = usrInput.nextLine();
+            toServer.writeUTF(targetPath);
+            toServer.flush();
+            System.out.println("Sent desired pathname: " + targetPath);
 
-                System.out.println("Server connected.");
-                toServer.writeObject(ClientType.RECEIVER);
-                toServer.flush();
-                System.out.println("Sent client type to server...");
-                System.out.print("Enter user path for file extraction: ");
-                String targetPath = usrInput.nextLine();
-                toServer.writeUTF(targetPath);
-                toServer.flush();
-                System.out.println("Sent desired pathname: " + targetPath);
-
-                while (true) {
-                    IFileData fileData = (IFileData) fromServer.readObject();
-                    fileData.writeTo(DOWNLOAD_PATH);
-                    System.out.println("Received " + fileData.toString());
-                }
-            } catch (EOFException eofe) {
-                System.out.println("No more data from sending client.");
-            } catch (Exception e) {
-                e.printStackTrace();
-                shouldContinue = false;
+            while (true) {
+                IFileData fileData = (IFileData) fromServer.readObject();
+                fileData.writeTo(DOWNLOAD_PATH);
+                System.out.println("Received " + fileData.toString());
             }
+        } catch (EOFException eofe) {
+            System.out.println("No more data from sending client.");
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

@@ -3,32 +3,28 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.Stack;
+import java.util.LinkedList;
+import java.util.Queue;
 
 public class SendingClient {
     public static void main(String[] args) {
         final int PORT = 10001;
         final String HOSTNAME = "donraspberrypi.ddns.net";
 
-        boolean shouldContinue = true;
+        try (Socket server = new Socket(HOSTNAME, PORT);
+             ObjectOutputStream toServer = new ObjectOutputStream(server.getOutputStream());
+             ObjectInputStream fromServer = new ObjectInputStream(server.getInputStream())) {
 
-        while (shouldContinue) {
-            try (Socket server = new Socket(HOSTNAME, PORT);
-                 ObjectOutputStream toServer = new ObjectOutputStream(server.getOutputStream());
-                 ObjectInputStream fromServer = new ObjectInputStream(server.getInputStream())) {
-
-                System.out.println("Connected to server.");
-                toServer.writeObject(ClientType.SENDER);
-                toServer.flush();
-                System.out.println("Sent client type to server.");
-                String userPath = fromServer.readUTF();
-                System.out.println("Received desired path: " + userPath);
-                sendAllInPath(userPath, toServer);
-                System.out.println("Sent copied file(s).");
-            } catch (Exception e) {
-                e.printStackTrace();
-                shouldContinue = false;
-            }
+            System.out.println("Connected to server.");
+            toServer.writeObject(ClientType.SENDER);
+            toServer.flush();
+            System.out.println("Sent client type to server.");
+            String userPath = fromServer.readUTF();
+            System.out.println("Received desired path: " + userPath);
+            sendAllInPath(userPath, toServer);
+            System.out.println("Sent copied file(s).");
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -43,11 +39,11 @@ public class SendingClient {
             return;
         }
 
-        Stack<DirectoryData> toSend = new Stack<>();
+        Queue<DirectoryData> toSend = new LinkedList<>();
         handleFile(root, toSend, toServer);
 
         while (!toSend.isEmpty()) {
-            DirectoryData f = toSend.pop();
+            DirectoryData f = toSend.remove();
             toServer.writeObject(f);
             toServer.flush();
             toServer.reset();
@@ -59,10 +55,10 @@ public class SendingClient {
     }
 
     // Determines if a given file should be added to the stack or immediately sent through the stream.
-    private static void handleFile(IFileData f, Stack<DirectoryData> toSend, ObjectOutputStream toServer) throws IOException {
+    private static void handleFile(IFileData f, Queue<DirectoryData> toSend, ObjectOutputStream toServer) throws IOException {
         if (f.isDirectory()) {
             DirectoryData dir = (DirectoryData) f;
-            toSend.push(dir);
+            toSend.add(dir);
         } else {
             DocumentData doc = (DocumentData) f;
             // sending the document in pieces
