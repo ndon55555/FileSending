@@ -1,3 +1,4 @@
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -32,5 +33,12 @@ public class Utilities {
         }
 
         return result;
+    }
+
+    // Closes each of the given objects if possible.
+    public static void closeAll(Closeable... arr) throws IOException {
+        for (Closeable c : arr) {
+            if (c != null) c.close();
+        }
     }
 }

@@ -1,24 +1,39 @@
 import java.io.EOFException;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
 public class FileSendingServer {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         final int PORT = 10001;
 
         boolean shouldContinue = true;
 
         while (shouldContinue) {
-            try (ServerSocket server = new ServerSocket(PORT);
-                 Socket client1 = server.accept();
-                 Socket client2 = server.accept();
-                 ObjectOutputStream oos1 = new ObjectOutputStream(client1.getOutputStream());
-                 ObjectOutputStream oos2 = new ObjectOutputStream(client2.getOutputStream());
-                 ObjectInputStream ois1 = new ObjectInputStream(client1.getInputStream());
-                 ObjectInputStream ois2 = new ObjectInputStream(client2.getInputStream())
-            ) {
+            ServerSocket server = null;
+            Socket client1 = null;
+            Socket client2 = null;
+            ObjectOutputStream oos1 = null;
+            ObjectOutputStream oos2 = null;
+            ObjectInputStream ois1 = null;
+            ObjectInputStream ois2 = null;
+
+            try {
+                server = new ServerSocket(PORT) ;
+
+                // Establish connections with first client
+                client1 = server.accept();
+                oos1 = new ObjectOutputStream(client1.getOutputStream());
+                oos1.flush();
+                ois1 = new ObjectInputStream(client1.getInputStream());
+
+                // Establish connections with second client
+                client2 = server.accept();
+                oos2 = new ObjectOutputStream(client2.getOutputStream());
+                oos2.flush();
+                ois2 = new ObjectInputStream(client2.getInputStream());
 
                 ClientType type1 = (ClientType) ois1.readObject();
                 ClientType type2 = (ClientType) ois2.readObject();
@@ -76,11 +91,13 @@ public class FileSendingServer {
                     toReceiver.flush();
                     toReceiver.reset();
                 }
-            } catch (EOFException eofe) {
+            } catch(EOFException eofe){
                 System.out.println("One of the clients has disconnected.");
-            } catch (Exception e) {
+            } catch(Exception e){
                 e.printStackTrace();
                 shouldContinue = false;
+            } finally {
+                Utilities.closeAll(server, client1, client2, oos1, oos2, ois1, ois2);
             }
         }
     }

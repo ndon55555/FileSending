@@ -1,0 +1,3 @@
+- Stick to one type of object pairs for reading and writing through streams (e.g. ObjectInputStream w/ ObjectOutputStream and DataInputStream w/ DataOutputStream).
+- Flush a writer immediately if possible after connecting to an output stream. This will ensure the input stream on the other end of the connection doesn't keep blocking.
+- Call .reset() on ObjectOutputStream periodically. This cleans the buffer of all previous writes. Otherwise, a memory leak will occur.

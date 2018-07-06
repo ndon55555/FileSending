@@ -67,7 +67,7 @@ public class SendingClient {
             DocumentData doc = new DocumentData(partialPathName, f.getCanonicalPath());
 
             // sending the document in pieces
-            for (DocumentPiece piece : doc.getPieces()) {
+            for (DocumentDataPiece piece : doc.getPieces()) {
                 toServer.writeObject(piece);
                 toServer.flush();
                 toServer.reset();

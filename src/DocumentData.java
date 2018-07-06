@@ -4,7 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 // Represents an entire document (contains all disjoint subsets of its bytes).
-public class DocumentData extends AbstractFileData {
+public class DocumentData extends AbstractDocumentData {
     private List<byte[]> pieces;
 
     // constructor
@@ -14,11 +14,11 @@ public class DocumentData extends AbstractFileData {
     }
 
     // Returns a list of all DocumentPieces used to represent this document.
-    public List<DocumentPiece> getPieces() throws IOException {
-        List<DocumentPiece> result = new LinkedList<>();
+    public List<DocumentDataPiece> getPieces() throws IOException {
+        List<DocumentDataPiece> result = new LinkedList<>();
 
         for (byte[] arr : pieces) {
-            result.add(new DocumentPiece(this.getPartialPathName(), this.getCanonicalPath(), arr));
+            result.add(new DocumentDataPiece(this.getPartialPathName(), this.getCanonicalPath(), arr));
         }
 
         return result;
@@ -31,7 +31,7 @@ public class DocumentData extends AbstractFileData {
 
     @Override
     public void writeTo(String destination) throws IOException {
-        for (DocumentPiece piece : this.getPieces()) {
+        for (DocumentDataPiece piece : this.getPieces()) {
             piece.writeTo(destination);
         }
     }

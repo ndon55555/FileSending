@@ -14,9 +14,4 @@ public abstract class AbstractFileData extends File implements IFileData {
     public String getPartialPathName() {
         return this.partialPathName;
     }
-
-    @Override
-    public String toString() {
-        return "document " + this.getName();
-    }
 }
