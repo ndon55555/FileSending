@@ -1,6 +1,8 @@
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.LinkedList;
+import java.util.List;
 
 // Represents a directory.
 class DirectoryData extends AbstractFileData {
@@ -18,6 +20,27 @@ class DirectoryData extends AbstractFileData {
     @Override
     public boolean isDirectory() {
         return true;
+    }
+
+    @Override
+    public List<IFileData> getSubFiles() {
+        List<IFileData> result = new LinkedList<>();
+        File[] subFiles = this.listFiles();
+
+        if (subFiles != null) {
+            for (File subFile : subFiles) {
+                String childPartialPathName = this.getPartialPathName() + "/" + subFile.getName();
+
+                try {
+                    IFileData f = FileDataFactory.getFileData(childPartialPathName, subFile.getCanonicalPath());
+                    result.add(f);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return result;
     }
 
     @Override

@@ -25,11 +25,6 @@ public class DocumentData extends AbstractDocumentData {
     }
 
     @Override
-    public boolean isDirectory() {
-        return false;
-    }
-
-    @Override
     public void writeTo(String destination) throws IOException {
         for (DocumentDataPiece piece : this.getPieces()) {
             piece.writeTo(destination);

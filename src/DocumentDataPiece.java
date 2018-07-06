@@ -21,9 +21,4 @@ public class DocumentDataPiece extends AbstractDocumentData {
             toDoc.write(this.data);
         }
     }
-
-    @Override
-    public boolean isDirectory() {
-        return false;
-    }
 }

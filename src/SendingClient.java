@@ -1,9 +1,8 @@
-import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.nio.file.Files;
 import java.util.Stack;
 
 public class SendingClient {
@@ -35,37 +34,37 @@ public class SendingClient {
 
     // Sends all the files in the given user path through the given output stream.
     private static void sendAllInPath(String userPath, ObjectOutputStream toServer) throws IOException {
-        String absPath = "C:/Users/" + System.getProperty("user.name") + "/" + userPath;
-        File root = new File(absPath);
+        String canonPathName = "C:/Users/" + System.getProperty("user.name") + "/" + userPath;
+        IFileData root;
 
-        if (Files.exists(root.toPath())) {
-            Stack<DirectoryData> toSend = new Stack<>();
-            handleFile(root.getName(), root, toSend, toServer);
+        try {
+            root = FileDataFactory.getFileData(canonPathName);
+        } catch (FileNotFoundException e) {
+            return;
+        }
 
-            while (!toSend.isEmpty()) {
-                DirectoryData f = toSend.pop();
-                toServer.writeObject(f);
-                toServer.flush();
-                toServer.reset();
-                File[] subFiles = f.listFiles();
+        Stack<DirectoryData> toSend = new Stack<>();
+        handleFile(root, toSend, toServer);
 
-                if (subFiles != null) {
-                    for (File subFile : subFiles) {
-                        String partialPathName = f.getPartialPathName() + "/" + subFile.getName();
-                        handleFile(partialPathName, subFile, toSend, toServer);
-                    }
-                }
+        while (!toSend.isEmpty()) {
+            DirectoryData f = toSend.pop();
+            toServer.writeObject(f);
+            toServer.flush();
+            toServer.reset();
+
+            for (IFileData subFile : f.getSubFiles()) {
+                handleFile(subFile, toSend, toServer);
             }
         }
     }
 
     // Determines if a given file should be added to the stack or immediately sent through the stream.
-    private static void handleFile(String partialPathName, File f, Stack<DirectoryData> toSend, ObjectOutputStream toServer) throws IOException {
+    private static void handleFile(IFileData f, Stack<DirectoryData> toSend, ObjectOutputStream toServer) throws IOException {
         if (f.isDirectory()) {
-            toSend.push(new DirectoryData(partialPathName, f.getCanonicalPath()));
+            DirectoryData dir = (DirectoryData) f;
+            toSend.push(dir);
         } else {
-            DocumentData doc = new DocumentData(partialPathName, f.getCanonicalPath());
-
+            DocumentData doc = (DocumentData) f;
             // sending the document in pieces
             for (DocumentDataPiece piece : doc.getPieces()) {
                 toServer.writeObject(piece);
