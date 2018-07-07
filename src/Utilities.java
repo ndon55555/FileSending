@@ -2,6 +2,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -40,5 +41,12 @@ public class Utilities {
         for (Closeable c : arr) {
             if (c != null) c.close();
         }
+    }
+
+    // Writes a given object through, flushes, and resets a given ObjectOutputStream.
+    public static void writeFlushResetObject(ObjectOutputStream oos, Object o) throws IOException {
+        oos.writeObject(o);
+        oos.flush();
+        oos.reset();
     }
 }

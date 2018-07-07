@@ -16,6 +16,10 @@ public abstract class AbstractDocumentData extends AbstractFileData {
         return new LinkedList<>();
     }
 
+    public long getByteSize() {
+        return this.length();
+    }
+
     @Override
     public String toString() {
         return "document " + this.getName();

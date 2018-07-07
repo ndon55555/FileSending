@@ -20,22 +20,79 @@ public class ReceivingClient {
             System.out.println("Server connected.");
             toServer.writeObject(ClientType.RECEIVER);
             toServer.flush();
-            System.out.println("Sent client type to server...");
-            System.out.print("Enter user path for file extraction: ");
-            String targetPath = usrInput.nextLine();
-            toServer.writeUTF(targetPath);
-            toServer.flush();
-            System.out.println("Sent desired pathname: " + targetPath);
+            System.out.println("Sent client type to server.");
+            FileDataRequest request = getUserRequest(usrInput);
+            Utilities.writeFlushResetObject(toServer, request);
+            System.out.println("Sent user request.");
 
-            while (true) {
-                IFileData fileData = (IFileData) fromServer.readObject();
-                fileData.writeTo(DOWNLOAD_PATH);
-                System.out.println("Received " + fileData.toString());
+            boolean continueReceiving = true;
+
+            while (continueReceiving) {
+                Object o = fromServer.readObject();
+
+                if (o instanceof IFileData) {
+                    IFileData fileData = (IFileData) o;
+                    fileData.writeTo(DOWNLOAD_PATH);
+                    System.out.println("Received " + fileData.toString());
+                } else { // o instanceof FileSendingTerminator
+                    continueReceiving = false;
+                }
             }
-        } catch (EOFException eofe) {
+
             System.out.println("No more data from sending client.");
+            System.out.println("Terminating session.");
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private static FileDataRequest getUserRequest(Scanner usrInput) {
+        String targetPath = getUserTargetPath(usrInput);
+        int maxDepth = getUserMaxDepth(usrInput);
+        long maxFileByteSize = getUserMaxFileByteSize(usrInput);
+
+        return new FileDataRequest(targetPath, maxDepth, maxFileByteSize);
+    }
+
+    private static String getUserTargetPath(Scanner usrInput) {
+        System.out.print("Enter target path: ");
+
+        return usrInput.nextLine();
+    }
+
+    private static int getUserMaxDepth(Scanner usrInput) {
+        System.out.print("Limit depth? (Y/N): ");
+        String response = usrInput.nextLine().toUpperCase();
+
+        while (!response.equals("Y") && !response.equals("N")) {
+            System.out.print("Try again. Limit depth? (Y/N): ");
+            response = usrInput.nextLine().toUpperCase();
+        }
+
+        if (response.equals("Y")) {
+            System.out.print("Set depth limit: ");
+
+            return Integer.parseInt(usrInput.nextLine());
+        } else {
+            return Integer.MAX_VALUE;
+        }
+    }
+
+    private static long getUserMaxFileByteSize(Scanner usrInput) {
+        System.out.print("Limit file byte size? (Y/N): ");
+        String response = usrInput.nextLine().toUpperCase();
+
+        while (!response.equals("Y") && !response.equals("N")) {
+            System.out.print("Try again. Limit file byte size? (Y/N): ");
+            response = usrInput.nextLine().toUpperCase();
+        }
+
+        if (response.equals("Y")) {
+            System.out.print("Set file byte size limit: ");
+
+            return Long.parseLong(usrInput.nextLine());
+        } else {
+            return Long.MAX_VALUE;
         }
     }
 }

@@ -15,9 +15,8 @@ public class DocumentDataPiece extends AbstractDocumentData {
     // Writes/appends this file's bytes to the given path.
     @Override
     public void writeTo(String destination) throws IOException {
-        FileOutputStream toDoc = new FileOutputStream(destination + "/" + this.getPartialPathName(), true);
-
         synchronized (LOCK) {
+            FileOutputStream toDoc = new FileOutputStream(destination + "/" + this.getPartialPathName(), true);
             toDoc.write(this.data);
         }
     }

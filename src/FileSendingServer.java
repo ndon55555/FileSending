@@ -21,7 +21,7 @@ public class FileSendingServer {
             ObjectInputStream ois2 = null;
 
             try {
-                server = new ServerSocket(PORT) ;
+                server = new ServerSocket(PORT);
 
                 // Establish connections with first client
                 client1 = server.accept();
@@ -81,19 +81,23 @@ public class FileSendingServer {
                 }
 
                 System.out.println("Both clients connected.");
-                String targetUserPath = fromReceiver.readUTF();
-                System.out.println("Receiver wants " + targetUserPath);
-                toSender.writeUTF(targetUserPath);
-                toSender.flush();
+                FileDataRequest request = (FileDataRequest) fromReceiver.readObject();
+                System.out.println("Received request from receiver.");
+                Utilities.writeFlushResetObject(toSender, request);
+                System.out.println("Forwarded request to sender.");
 
-                while (true) {
-                    toReceiver.writeObject(fromSender.readObject());
-                    toReceiver.flush();
-                    toReceiver.reset();
+                boolean continueSending = true;
+
+                while (continueSending) {
+                    Object o = fromSender.readObject();
+                    Utilities.writeFlushResetObject(toReceiver, o);
+                    continueSending = !(o instanceof FileSendingTerminator);
                 }
-            } catch(EOFException eofe){
-                System.out.println("One of the clients has disconnected.");
-            } catch(Exception e){
+
+                fromReceiver.readObject(); // blocking on receiver before receiving EOFException and terminating session
+            } catch (EOFException eofe) {
+                System.out.println("Terminating session.");
+            } catch (Exception e) {
                 e.printStackTrace();
                 shouldContinue = false;
             } finally {
