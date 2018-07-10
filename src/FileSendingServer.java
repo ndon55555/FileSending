@@ -13,71 +13,47 @@ public class FileSendingServer {
 
         while (shouldContinue) {
             ServerSocket server = null;
-            Socket client1 = null;
-            Socket client2 = null;
-            ObjectOutputStream oos1 = null;
-            ObjectOutputStream oos2 = null;
-            ObjectInputStream ois1 = null;
-            ObjectInputStream ois2 = null;
+            Socket receivingClient = null;
+            Socket sendingClient = null;
+            ObjectOutputStream toReceiver = null;
+            ObjectOutputStream toSender = null;
+            ObjectInputStream fromReceiver = null;
+            ObjectInputStream fromSender = null;
 
             try {
                 server = new ServerSocket(PORT);
 
-                // Establish connections with first client
-                client1 = server.accept();
-                oos1 = new ObjectOutputStream(client1.getOutputStream());
-                oos1.flush();
-                ois1 = new ObjectInputStream(client1.getInputStream());
+                while (receivingClient == null || sendingClient == null) {
+                    Socket client = server.accept();
+                    ObjectOutputStream toClient = new ObjectOutputStream(client.getOutputStream());
+                    toClient.flush();
+                    ObjectInputStream fromClient = new ObjectInputStream(client.getInputStream());
+                    ClientType type = (ClientType) fromClient.readObject();
 
-                // Establish connections with second client
-                client2 = server.accept();
-                oos2 = new ObjectOutputStream(client2.getOutputStream());
-                oos2.flush();
-                ois2 = new ObjectInputStream(client2.getInputStream());
+                    switch (type) {
+                        case SENDER:
+                            if (sendingClient != null) {
+                                System.out.println("Cannot have two sending clients.");
+                                Utilities.closeAll(client, toClient, fromClient);
+                            } else {
+                                sendingClient = client;
+                                toSender = toClient;
+                                fromSender = fromClient;
+                            }
 
-                ClientType type1 = (ClientType) ois1.readObject();
-                ClientType type2 = (ClientType) ois2.readObject();
-                Socket receivingClient = null;
-                Socket sendingClient = null;
-                ObjectOutputStream toReceiver = null;
-                ObjectOutputStream toSender = null;
-                ObjectInputStream fromReceiver = null;
-                ObjectInputStream fromSender = null;
+                            break;
+                        case RECEIVER:
+                            if (receivingClient != null) {
+                                System.out.println("Cannot have two receiving clients.");
+                                Utilities.closeAll(client, toClient, fromClient);
+                            } else {
+                                receivingClient = client;
+                                toReceiver = toClient;
+                                fromReceiver = fromClient;
+                            }
 
-                switch (type1) {
-                    case SENDER:
-                        sendingClient = client1;
-                        toSender = oos1;
-                        fromSender = ois1;
-                        break;
-                    case RECEIVER:
-                        receivingClient = client1;
-                        toReceiver = oos1;
-                        fromReceiver = ois1;
-                        break;
-                }
-
-                switch (type2) {
-                    case SENDER:
-                        if (sendingClient != null) {
-                            throw new RuntimeException("Cannot have two sending clients.");
-                        } else {
-                            sendingClient = client2;
-                            toSender = oos2;
-                            fromSender = ois2;
-                        }
-
-                        break;
-                    case RECEIVER:
-                        if (receivingClient != null) {
-                            throw new RuntimeException("Cannot have two receiving clients.");
-                        } else {
-                            receivingClient = client2;
-                            toReceiver = oos2;
-                            fromReceiver = ois2;
-                        }
-
-                        break;
+                            break;
+                    }
                 }
 
                 System.out.println("Both clients connected.");
@@ -101,7 +77,7 @@ public class FileSendingServer {
                 e.printStackTrace();
                 shouldContinue = false;
             } finally {
-                Utilities.closeAll(server, client1, client2, oos1, oos2, ois1, ois2);
+                Utilities.closeAll(server, receivingClient, sendingClient, fromReceiver, toReceiver, fromSender, toSender);
             }
         }
     }

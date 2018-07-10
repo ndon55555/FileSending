@@ -51,11 +51,13 @@ public class SendingClient {
             return;
         }
 
+        // BFS initialization that keeps track of distance from root
         Queue<DirectoryData> toSend = new LinkedList<>();
         Queue<DirectoryData> nextToSend = new LinkedList<>();
         int depth = 0;
         handleFile(root, toSend, maxFileByteSize, toServer);
 
+        // BFS loop
         while ((!toSend.isEmpty() || !nextToSend.isEmpty()) && depth < maxDepth) {
             if (toSend.isEmpty()) {
                 toSend = nextToSend;
@@ -71,6 +73,7 @@ public class SendingClient {
             }
         }
 
+        // if depth = maxDepth, then the queue might be non-empty and remaining directories should be dealt with
         while (!toSend.isEmpty()) {
             Utilities.writeFlushResetObject(toServer, toSend.remove());
         }
