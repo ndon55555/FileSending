@@ -1,4 +1,3 @@
-import java.io.EOFException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
@@ -17,7 +16,7 @@ public class ReceivingClient {
              ObjectOutputStream toServer = new ObjectOutputStream(server.getOutputStream());
              ObjectInputStream fromServer = new ObjectInputStream(server.getInputStream())) {
 
-            System.out.println("Server connected.");
+            System.out.println("Connected to server.");
             toServer.writeObject(ClientType.RECEIVER);
             toServer.flush();
             System.out.println("Sent client type to server.");

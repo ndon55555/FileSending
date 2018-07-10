@@ -1,3 +1,4 @@
 - Stick to one type of object pairs for reading and writing through streams (e.g. ObjectInputStream w/ ObjectOutputStream and DataInputStream w/ DataOutputStream).
 - Flush a writer immediately if possible after connecting to an output stream. This will ensure the input stream on the other end of the connection doesn't keep blocking.
 - Call .reset() on ObjectOutputStream periodically. This cleans the buffer of all previous writes. Otherwise, a memory leak will occur.
+- It is possible for a client to close the connection before its message is fully delivered to the server. Read from the server once done sending data and try to catch EOFException to terminate in order to avoid this issue.

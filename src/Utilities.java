@@ -37,9 +37,13 @@ public class Utilities {
     }
 
     // Closes each of the given objects if possible.
-    public static void closeAll(Closeable... arr) throws IOException {
+    public static void closeAll(Closeable... arr) {
         for (Closeable c : arr) {
-            if (c != null) c.close();
+            try {
+                if (c != null) c.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 

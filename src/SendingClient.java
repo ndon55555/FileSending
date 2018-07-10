@@ -12,6 +12,8 @@ public class SendingClient {
         final int PORT = 10001;
         final String HOSTNAME = "donraspberrypi.ddns.net";
 
+        System.out.println("Connecting to server...");
+
         try (Socket server = new Socket(HOSTNAME, PORT);
              ObjectOutputStream toServer = new ObjectOutputStream(server.getOutputStream());
              ObjectInputStream fromServer = new ObjectInputStream(server.getInputStream())) {
@@ -35,7 +37,9 @@ public class SendingClient {
             fromServer.readObject(); // blocking on server before receiving EOFException and terminating session
         } catch (EOFException eofe) {
             System.out.println("Terminating session.");
-        } catch (Exception e) {
+        } catch (ClassNotFoundException cnfe) {
+            System.err.println("Make sure all classes used are up to date.");
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
